@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>マイラジオ</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f2f2f2;--surface:#fff;--ink:#333;--sub:#777;--line:#ddd;--accent:#f7931e;--accent-ink:#fff;--teal:#3aaa35;--danger:#c62828;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);}
+
+:root[data-theme="dark"]{--bg:#10171f;--surface:#1a2430;--ink:#e8eef4;--sub:#93a3b5;--line:#2c3a49;--teal:#5cc0d3;--danger:#ff8a80}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Noto Sans JP","Hiragino Sans",sans-serif;font-weight:400}
+#app{max-width:520px;margin:0 auto;height:100%;display:flex;flex-direction:column}
+header{background:#fff;padding:12px 16px 10px;border-bottom:1px solid var(--line)}
+h1{margin:0;font-size:20px;font-weight:700;color:var(--teal)}
+.sub{margin:2px 0 0;color:var(--sub);font-size:14px}
+main{flex:1;overflow-y:auto;padding:0 0 20px;background:#fff}#reg{padding:14px}
+.days{display:flex;gap:2px;padding:10px 8px 0;position:sticky;top:0;background:var(--bg);z-index:2}
+.day{flex:1;border:0;border-top:3px solid transparent;background:#e3e3e3;color:#666;border-radius:0;padding:10px 0 8px;font:inherit;font-weight:500;font-size:15px;line-height:1.1;cursor:pointer}
+.day small{display:block;font-size:10px;color:var(--sub);font-weight:500;margin-top:3px;min-height:12px}
+.day[aria-pressed="true"]{background:#fff;color:var(--teal);border-top-color:var(--teal)}
+.day[aria-pressed="true"] small{color:var(--teal)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px 12px;padding:0 14px}.sec{color:var(--teal);font-size:17px;font-weight:500;margin:0;padding:18px 14px 12px}
+.card{display:block;text-decoration:none;color:inherit}
+.thumb{aspect-ratio:16/9;border-radius:3px;overflow:hidden;background:var(--surface);position:relative;display:flex;align-items:center;justify-content:center}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb .ini{font-size:44px;font-weight:900;color:#fff}
+.card:active .thumb{transform:scale(.97)}
+.thumb{transition:transform .12s}
+.play{display:none;position:absolute;right:8px;bottom:8px;width:34px;height:34px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:flex;align-items:center;justify-content:center;font-size:13px;padding-left:2px}
+.name{margin:8px 0 0;font-weight:500;font-size:14px;line-height:1.4;color:#222;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.time{margin-top:3px;font-size:12px;color:var(--sub)}.badge{display:inline-block;margin-top:6px;background:#e8412f;color:#fff;font-size:11px;font-weight:700;padding:1px 8px;border-radius:2px}.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}.chips span{background:#eee;color:#666;font-size:11px;padding:3px 9px;border-radius:99px}
+.empty{text-align:center;color:var(--sub);padding:56px 16px;line-height:1.8}
+.empty b{display:block;color:var(--ink);font-size:16px;margin-bottom:4px}
+.btn{border:0;border-radius:12px;padding:13px 18px;font:inherit;font-weight:700;font-size:15px;cursor:pointer}
+.btn.primary{background:var(--accent);color:var(--accent-ink);width:100%}
+.btn.ghost{background:transparent;border:1.5px solid var(--line);color:var(--ink)}
+.btn.link{background:none;padding:6px 8px;color:var(--teal);font-size:13px}
+.btn.link.del{color:var(--danger)}
+form{background:var(--surface);border:1.5px solid var(--line);border-radius:18px;padding:16px;display:grid;gap:14px}
+label,.lab{font-weight:700;font-size:13px;color:var(--sub);display:block;margin-bottom:6px}
+input[type=text],input[type=url],input[type=time]{width:100%;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;padding:12px;font:inherit;font-size:16px}
+input:focus-visible,button:focus-visible,a:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.pick{display:flex;gap:14px;align-items:center}
+.pick .thumb{width:84px;flex:none}
+.pick .thumb .ini{font-size:30px}
+.row-days{display:flex;gap:6px}
+.row-days button{flex:1;padding:10px 0;border-radius:10px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-weight:700;cursor:pointer}
+.row-days button[aria-pressed="true"]{background:var(--teal);border-color:var(--teal);color:#fff}
+.msg{color:var(--danger);font-size:13px;min-height:16px;margin:-6px 0 0}
+h2{font-size:16px;margin:24px 2px 10px}
+.item{display:flex;gap:12px;align-items:center;background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:10px;margin-bottom:10px}
+.item .thumb{width:52px;border-radius:10px;flex:none}
+.item .thumb .ini{font-size:20px}
+.item .info{flex:1;min-width:0}
+.item .info b{display:block;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .info span{font-size:12px;color:var(--sub)}
+nav{display:flex;background:var(--surface);border-top:1.5px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav button{flex:1;border:0;background:none;color:var(--sub);font:inherit;font-weight:700;font-size:12px;padding:10px 0 9px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px}
+nav button svg{width:24px;height:24px}
+nav button[aria-current="page"]{color:var(--teal)}
+nav button[aria-current="page"] svg{color:var(--teal)}
+.hidden{display:none!important}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app">
+  <header><h1 id="title">マイラジオ</h1><p class="sub" id="subtitle"></p></header>
+  <main id="main">
+    <section id="home">
+      <div class="days" id="days"></div>
+      <div id="list"></div>
+    </section>
+    <section id="reg" class="hidden">
+      <form id="form" autocomplete="off">
+        <div><label for="fName">ラジオ名</label><input type="text" id="fName" maxlength="60" placeholder="例：夜のまったりラジオ"></div>
+        <div><label for="fUrl">聴けるページのURL</label><input type="url" id="fUrl" inputmode="url" placeholder="https://"></div>
+        <div><label for="fCast">出演者（カンマ区切り・省略可）</label><input type="text" id="fCast" maxlength="120" placeholder="例：小市眞琴, 越後屋コースケ"></div>
+        <div><label style="display:flex;gap:8px;align-items:center;margin:0"><input type="checkbox" id="fNew" style="width:20px;height:20px">「新番組」バッジを付ける</label></div>
+        <div><span class="lab">配信曜日（複数選べます）</span><div class="row-days" id="fDays"></div></div>
+        <div><span class="lab">放送時間（省略可）</span><div style="display:flex;gap:8px;align-items:center"><input type="time" id="fStart" aria-label="開始時刻"><span>〜</span><input type="time" id="fEnd" aria-label="終了時刻"></div></div>
+        <div><span class="lab">サムネイル</span>
+          <div class="pick"><div class="thumb" id="pv"><span class="ini">？</span></div>
+          <div><button type="button" class="btn ghost" id="pickBtn">画像を選ぶ</button>
+          <input type="file" id="file" accept="image/*" class="hidden"></div></div></div>
+        <p class="msg" id="msg" role="alert"></p>
+        <button type="submit" class="btn primary" id="saveBtn">ラジオを登録</button>
+        <button type="button" class="btn ghost hidden" id="cancelBtn">編集をやめる</button>
+      </form>
+      <h2 id="regTitle">登録済みのラジオ</h2>
+      <div id="items"></div>
+    </section>
+  </main>
+  <nav>
+    <button id="tabHome" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="12" rx="3"/><path d="M7 8l10-4"/><circle cx="15" cy="14" r="2.5"/><path d="M6.5 12.5h3M6.5 15.5h3"/></svg>ラジオ</button>
+    <button id="tabReg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>登録</button>
+  </nav>
+</div>
+<script>
+(function(){
+var KEY="radio-app-v1",D=["日","月","火","水","木","金","土"],COL=["#1f7a8c","#c0562f","#5b6fb5","#4c8b52","#a8467a","#8a6d1d"];
+var radios=[],sel=new Date().getDay(),today=sel,editId=null,thumb="";
+try{var s=localStorage.getItem(KEY);if(s)radios=JSON.parse(s)||[]}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(radios))}catch(e){}}
+var $=function(i){return document.getElementById(i)};
+function esc(t){return String(t).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function safeUrl(u){return /^https?:\/\//i.test(u)?u:"#"}
+function color(n){var h=0;for(var i=0;i<n.length;i++)h=(h*31+n.charCodeAt(i))>>>0;return COL[h%COL.length]}
+function tile(r,play){
+  var inner=r.thumb?'<img src="'+r.thumb+'" alt="">':'<span class="ini">'+esc(r.name.charAt(0))+'</span>';
+  return '<div class="thumb" style="'+(r.thumb?'':'background:'+color(r.name))+'">'+inner+(play?'<span class="play" aria-hidden="true">▶</span>':'')+'</div>';
+}
+function timeText(r){return (r.start||r.end)?(r.start||"")+"〜"+(r.end||""):""}
+function extra(r){return (timeText(r)?'<div class="time">'+timeText(r)+'</div>':'')+(r.isNew?'<span class="badge">新番組</span>':'')+(r.cast&&r.cast.length?'<div class="chips">'+r.cast.map(function(c){return '<span>'+esc(c)+'</span>'}).join("")+'</div>':'')}
+function dayText(r){return r.days.length===7?"毎日":r.days.slice().sort().map(function(d){return D[d]}).join("・")}
+function renderDays(){
+  var h="";
+  for(var i=0;i<7;i++){
+    var n=radios.filter(function(r){return r.days.indexOf(i)>-1}).length;
+    h+='<button class="day" data-d="'+i+'" aria-pressed="'+(i===sel)+'">'+D[i]+'<small>'+(i===today?"今日":"")+'</small></button>';
+  }
+  $("days").innerHTML=h;
+}
+function renderList(){
+  var l=radios.filter(function(r){return r.days.indexOf(sel)>-1});
+  $("subtitle").textContent=(sel===today?"今日（":"")+D[sel]+"曜日"+(sel===today?"）":"")+"のラジオ "+l.length+"件";
+  if(!radios.length){$("list").innerHTML='<div class="empty"><b>まだラジオがありません</b>下の「登録」から、聴きたいラジオを追加しましょう。</div>';return}
+  if(!l.length){$("list").innerHTML='<div class="empty"><b>'+D[sel]+'曜日のラジオはありません</b>登録画面で配信曜日に'+D[sel]+'を選ぶと、ここに表示されます。</div>';return}
+  $("list").innerHTML='<h2 class="sec">'+D[sel]+'曜日の番組</h2><div class="grid">'+l.map(function(r){
+    return '<a class="card" href="'+esc(safeUrl(r.url))+'" target="_blank" rel="noopener noreferrer" aria-label="'+esc(r.name)+'を聴く">'+tile(r,true)+'<p class="name">'+esc(r.name)+'</p>'+extra(r)+'</a>';
+  }).join("")+'</div>';
+}
+function renderItems(){
+  if(!radios.length){$("items").innerHTML='<p class="sub" style="padding:0 2px">登録したラジオがここに並びます。</p>';return}
+  $("items").innerHTML=radios.map(function(r){
+    return '<div class="item">'+tile(r,false)+'<div class="info"><b>'+esc(r.name)+'</b><span>'+dayText(r)+(timeText(r)?'　'+timeText(r):'')+'</span></div><button class="btn link" data-e="'+r.id+'">編集</button><button class="btn link del" data-x="'+r.id+'">削除</button></div>';
+  }).join("");
+}
+function renderFDays(sdays){
+  $("fDays").innerHTML=D.map(function(d,i){return '<button type="button" data-fd="'+i+'" aria-pressed="'+(sdays.indexOf(i)>-1)+'">'+d+'</button>'}).join("");
+}
+function fSel(){return Array.prototype.map.call($("fDays").querySelectorAll('[aria-pressed="true"]'),function(b){return +b.dataset.fd})}
+function setPv(){var n=$("fName").value.trim()||"？";$("pv").setAttribute("style",thumb?"":"background:"+color(n));$("pv").innerHTML=thumb?'<img src="'+thumb+'" alt="">':'<span class="ini">'+esc(n.charAt(0))+'</span>'}
+function resetForm(){editId=null;thumb="";$("form").reset();renderFDays([sel]);setPv();$("msg").textContent="";$("saveBtn").textContent="ラジオを登録";$("cancelBtn").classList.add("hidden")}
+function show(tab){
+  var home=tab==="home";
+  $("home").classList.toggle("hidden",!home);$("reg").classList.toggle("hidden",home);
+  $("tabHome").setAttribute("aria-current",home?"page":"false");$("tabReg").setAttribute("aria-current",home?"false":"page");
+  $("title").textContent=home?"マイラジオ":"ラジオを登録";
+  if(home){renderDays();renderList()}else{$("subtitle").textContent="聴きたいラジオを追加・編集します";renderItems()}
+  $("main").scrollTop=0;
+}
+$("tabHome").onclick=function(){show("home")};
+$("tabReg").onclick=function(){resetForm();show("reg")};
+$("days").onclick=function(e){var b=e.target.closest(".day");if(!b)return;sel=+b.dataset.d;renderDays();renderList()};
+$("fDays").onclick=function(e){var b=e.target.closest("button");if(!b)return;b.setAttribute("aria-pressed",b.getAttribute("aria-pressed")!=="true")};
+$("fName").oninput=setPv;
+$("pickBtn").onclick=function(){$("file").click()};
+$("file").onchange=function(){
+  var f=this.files[0];if(!f)return;
+  var rd=new FileReader();
+  rd.onload=function(){var im=new Image();im.onload=function(){
+    var W=480,H=270,c=document.createElement("canvas"),k=Math.min(im.width/16,im.height/9),mw=k*16,mh=k*9,sx=(im.width-mw)/2,sy=(im.height-mh)/2;
+    c.width=W;c.height=H;c.getContext("2d").drawImage(im,sx,sy,mw,mh,0,0,W,H);
+    thumb=c.toDataURL("image/jpeg",.82);setPv()};im.src=rd.result};
+  rd.readAsDataURL(f);
+};
+$("form").onsubmit=function(e){
+  e.preventDefault();
+  var name=$("fName").value.trim(),url=$("fUrl").value.trim(),days=fSel();
+  if(!name){$("msg").textContent="ラジオ名を入力してください。";return}
+  if(!/^https?:\/\/.+/i.test(url)){$("msg").textContent="URLは http:// または https:// から入力してください。";return}
+  if(!days.length){$("msg").textContent="配信曜日を1つ以上選んでください。";return}
+  var rec={id:editId||String(Date.now()),name:name,url:url,days:days,thumb:thumb,cast:$("fCast").value.split(/[,、，]/).map(function(s){return s.trim()}).filter(Boolean),isNew:$("fNew").checked,start:$("fStart").value,end:$("fEnd").value};
+  if(editId){radios=radios.map(function(r){return r.id===editId?rec:r})}else{radios.push(rec)}
+  save();resetForm();renderItems();
+  $("msg").textContent="";
+};
+$("cancelBtn").onclick=function(){resetForm()};
+$("items").onclick=function(e){
+  var x=e.target.closest("[data-x]"),ed=e.target.closest("[data-e]");
+  if(x){var r=radios.filter(function(r){return r.id===x.dataset.x})[0];
+    if(r&&confirm("「"+r.name+"」を削除しますか？")){radios=radios.filter(function(q){return q.id!==r.id});save();renderItems()}}
+  if(ed){var r2=radios.filter(function(r){return r.id===ed.dataset.e})[0];if(!r2)return;
+    editId=r2.id;thumb=r2.thumb||"";$("fName").value=r2.name;$("fUrl").value=r2.url;$("fCast").value=(r2.cast||[]).join(", ");$("fNew").checked=!!r2.isNew;$("fStart").value=r2.start||"";$("fEnd").value=r2.end||"";renderFDays(r2.days);setPv();
+    $("saveBtn").textContent="変更を保存";$("cancelBtn").classList.remove("hidden");$("main").scrollTop=0}
+};
+resetForm();show("home");
+})();
+</script>
+</body>
+</html>
